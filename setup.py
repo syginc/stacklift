@@ -24,6 +24,7 @@ setup(
     packages=[
         "stacklift"
     ],
+    python_requires='>=3.6',
     install_requires= [
         "pyyaml",
         "boto3",
