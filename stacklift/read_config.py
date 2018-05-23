@@ -76,13 +76,13 @@ class ReadConfigOptions:
         self.section = None
         self.default = None
         self.parameter = False
-        self.keys = []
+        self.key = None
 
 
 def read_config(opts: ReadConfigOptions):
     config_reader = ConfigReader(opts.file)
 
-    key = opts.keys[0]
+    key = opts.key
     if opts.parameter:
         if opts.default is not None:
             print(config_reader.get_parameter_or_default(opts.section, key, opts.default))

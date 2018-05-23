@@ -13,19 +13,19 @@ def cli():
 @click.option("--file", "-f", required=True)
 @click.option("--section", "-s", required=True)
 @click.option("--default", "-d")
-@click.option("--parameter", "-p", default=False)
-@click.argument("keys", nargs=-1)
-def read_config_cli(file, section, default, parameter, keys):
+@click.option("--parameter", "-p", is_flag=True, default=False)
+@click.argument("key", nargs=1)
+def read_config_cli(file, section, default, parameter, key):
     opts = ReadConfigOptions()
     opts.file = file
     opts.section = section
     opts.default = default
     opts.parameter = parameter
-    opts.keys = keys
+    opts.key = key
     read_config(opts)
 
 @cli.command(name="validate_configs")
-@click.argument("--files", nargs=-1)
+@click.argument("files", nargs=-1)
 def validate_config_cli(files):
     validate_configs(files=files)
 
