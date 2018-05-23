@@ -8,6 +8,8 @@ jobs:
     steps:
       - checkout
 
+      - run: pip install pipenv
+
       - restore_cache:
           key: pipenv-{{ arch }}-{{ checksum "Pipfile.lock" }}
 
@@ -38,8 +40,12 @@ jobs:
       - image: python:3
 
     steps:
+      - checkout
+
       - attach_workspace:
           at: .
+
+      - run: pip install pipenv
 
       - restore_cache:
           key: pipenv-{{ arch }}-{{ checksum "Pipfile.lock" }}
@@ -53,8 +59,8 @@ jobs:
             - ~/.cache/pipenv
 
       # TWINE_USERNAME and TWINE_PASSWORD environmental variables are required
-      - run: twine upload --repository-url https://test.pypi.org/legacy/ dist/*
-      # - run: twine upload dist/*
+      # - run: pipenv run twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+      - run: pipenv run twine upload dist/*
 
 workflows:
   version: 2
@@ -69,6 +75,6 @@ workflows:
             - build
           filters:
             branches:
-              only: master
+              ignore: /.*/
             tags:
               only: /v[0-9]+(\.[0-9]+)*/
