@@ -94,8 +94,7 @@ class DeployTemplate:
             parameter_names = self.get_parameter_names(self.template_file)
             params = self.config_reader.get_parameters(self.section_name, parameter_names)
 
-            deploy_function = self.config_reader.get_value_or_default(self.section_name, "DeployFunction", "false")
-            if deploy_function == "true":
+            if function_root:
                 deploy_bucket_name = self.config_reader.get_value(self.section_name, "DeployBucketName")
                 deploy_code_key = self.upload_function(deploy_bucket_name=deploy_bucket_name,
                                                        function_root=function_root)
@@ -134,12 +133,3 @@ class DeployTemplate:
             return True
         except botocore.exceptions.ClientError:
             return False
-
-
-def deploy_template(config_file, template_file, section_name, stack_desired_state, function_root):
-    instance = DeployTemplate(config_file=config_file,
-                              template_file=template_file,
-                              section_name=section_name,
-                              stack_desired_state=stack_desired_state)
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(instance.deploy(function_root))
