@@ -1,32 +1,24 @@
 #!/usr/bin/env python3
 
 import asyncio
-import yaml
 from stacklift.deploy_template import DeployTemplate
 from stacklift.cfn_deploy import DeployStatus
+from stacklift.templates_config import TemplatesConfig
 import os
 import logging
-
 
 logging.basicConfig(format="[%(name)s] %(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class DeployGroup:
-    def __init__(self, config_file, group_file):
+    def __init__(self, config_file, group_name, templates_file):
         self.config_file = config_file
 
-        with open(group_file) as f:
-            self.group_config = yaml.load(f)
-        self.group_file_dir = os.path.dirname(group_file)
+        self.templates_config = TemplatesConfig(templates_file)
 
-        self.template_dict = {template["Name"]: template for template in self.group_config["Templates"]}
+        self.group_name = group_name
         self.deploy_futures = {}
-
-    def get_template(self, name):
-        template = self.template_dict.get(name)
-        if template is None:
-            raise RuntimeError("Template {} is not found.".format(name))
-        return template
 
     async def deploy(self, name, start_ready_event):
         await start_ready_event.wait()
@@ -34,7 +26,7 @@ class DeployGroup:
         logger = logging.getLogger(name)
         logger.setLevel(logging.INFO)
 
-        template = self.get_template(name)
+        template = self.templates_config.get_template_config(self.group_name, name)
         depends = template.get("Depends") or []
         if depends:
             depend_results = await asyncio.gather(*[self.deploy_futures[x] for x in depends])
@@ -48,10 +40,10 @@ class DeployGroup:
 
         try:
             filename = template.get("Filename")
-            template_file = os.path.join(self.group_file_dir, filename) if filename else None
+            template_file = os.path.join(self.templates_config.templates_file_dir, filename) if filename else None
 
             function_root = template.get("FunctionRoot")
-            function_root_dir = os.path.join(self.group_file_dir, function_root) if function_root else None
+            function_root_dir = os.path.join(self.templates_config.templates_file_dir, function_root) if function_root else None
 
             deploy_template = DeployTemplate(template_file=template_file,
                                              config_file=self.config_file,
@@ -66,7 +58,7 @@ class DeployGroup:
 
     async def deploy_all(self):
         start_ready_event = asyncio.Event()
-        for name in self.template_dict.keys():
+        for name in self.templates_config.get_group_template_names(self.group_name):
             self.deploy_futures[name] = asyncio.ensure_future(self.deploy(name, start_ready_event))
         start_ready_event.set()
 
@@ -82,7 +74,7 @@ class DeployGroup:
 
         logger.info("\n".join(lines))
 
-def deploy_group(config_file, group_file):
-    instance = DeployGroup(config_file=config_file, group_file=group_file)
+def deploy_group(config_file, group_name, templates_file):
+    instance = DeployGroup(config_file=config_file, group_name=group_name, templates_file=templates_file)
     loop = asyncio.get_event_loop()
     loop.run_until_complete(instance.deploy_all())
