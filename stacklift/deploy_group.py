@@ -12,9 +12,8 @@ logging.basicConfig(format="[%(name)s] %(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class DeployGroup:
-    def __init__(self, config_file, group_file, function_root):
+    def __init__(self, config_file, group_file):
         self.config_file = config_file
-        self.function_root = function_root
 
         with open(group_file) as f:
             self.group_config = yaml.load(f)
@@ -50,11 +49,15 @@ class DeployGroup:
         try:
             filename = template.get("Filename")
             template_file = os.path.join(self.group_file_dir, filename) if filename else None
+
+            function_root = template.get("FunctionRoot")
+            function_root_dir = os.path.join(self.group_file_dir, function_root) if function_root else None
+
             deploy_template = DeployTemplate(template_file=template_file,
                                              config_file=self.config_file,
                                              section_name=name,
                                              stack_desired_state=template.get("StackDesiredState"))
-            deploy_result = await deploy_template.deploy(function_root=self.function_root)
+            deploy_result = await deploy_template.deploy(function_root=function_root_dir)
 
             return deploy_result
         except:
@@ -79,7 +82,7 @@ class DeployGroup:
 
         logger.info("\n".join(lines))
 
-def deploy_group(config_file, group_file, function_root):
-    instance = DeployGroup(config_file=config_file, group_file=group_file, function_root=function_root)
+def deploy_group(config_file, group_file):
+    instance = DeployGroup(config_file=config_file, group_file=group_file)
     loop = asyncio.get_event_loop()
     loop.run_until_complete(instance.deploy_all())

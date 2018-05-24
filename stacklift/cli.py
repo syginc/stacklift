@@ -32,9 +32,8 @@ def validate_config_cli(files):
 @cli.command(name="deploy_group")
 @click.option("--config-file", "-f", required=True)
 @click.option("--group-file", "-g", required=True)
-@click.option("--function-root", "-r")
-def deploy_group_cli(config_file, group_file, function_root):
-    deploy_group(config_file=config_file, group_file=group_file, function_root=function_root)
+def deploy_group_cli(config_file, group_file):
+    deploy_group(config_file=config_file, group_file=group_file)
 
 
 def run():
