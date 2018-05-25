@@ -4,7 +4,6 @@ import asyncio
 from stacklift.deploy_template import DeployTemplate
 from stacklift.cfn_deploy import DeployStatus
 from stacklift.templates_config import TemplatesConfig
-import os
 import logging
 
 logging.basicConfig(format="[%(name)s] %(message)s", level=logging.INFO)
@@ -12,10 +11,9 @@ logger = logging.getLogger(__name__)
 
 
 class DeployGroup:
-    def __init__(self, config_file, group_name, templates_file):
+    def __init__(self, config_file, group_name):
         self.config_file = config_file
-
-        self.templates_config = TemplatesConfig(templates_file)
+        self.templates_config = TemplatesConfig.from_config_path(config_file)
 
         self.group_name = group_name
         self.deploy_futures = {}
@@ -26,8 +24,8 @@ class DeployGroup:
         logger = logging.getLogger(name)
         logger.setLevel(logging.INFO)
 
-        template = self.templates_config.get_template_config(self.group_name, name)
-        depends = template.get("Depends") or []
+        template_config = self.templates_config.get_template_config(self.group_name, name)
+        depends = template_config.get_depends()
         if depends:
             depend_results = await asyncio.gather(*[self.deploy_futures[x] for x in depends])
             if not all(depend_results):
@@ -39,17 +37,14 @@ class DeployGroup:
                 raise RuntimeError("Dependent stack(s) did not complete changing")
 
         try:
-            filename = template.get("Filename")
-            template_file = os.path.join(self.templates_config.templates_file_dir, filename) if filename else None
-
-            function_root = template.get("FunctionRoot")
-            function_root_dir = os.path.join(self.templates_config.templates_file_dir, function_root) if function_root else None
+            template_file = template_config.get_template_path()
+            function_root = template_config.get_function_root()
 
             deploy_template = DeployTemplate(template_file=template_file,
                                              config_file=self.config_file,
                                              section_name=name,
-                                             stack_desired_state=template.get("StackDesiredState"))
-            deploy_result = await deploy_template.deploy(function_root=function_root_dir)
+                                             stack_desired_state=template_config.get_stack_desired_state())
+            deploy_result = await deploy_template.deploy(function_root=function_root)
 
             return deploy_result
         except:
@@ -74,7 +69,8 @@ class DeployGroup:
 
         logger.info("\n".join(lines))
 
-def deploy_group(config_file, group_name, templates_file):
-    instance = DeployGroup(config_file=config_file, group_name=group_name, templates_file=templates_file)
+
+def deploy_group(config_file, group_name):
+    instance = DeployGroup(config_file=config_file, group_name=group_name)
     loop = asyncio.get_event_loop()
     loop.run_until_complete(instance.deploy_all())

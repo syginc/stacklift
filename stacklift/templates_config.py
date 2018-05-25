@@ -1,12 +1,47 @@
 import yaml
 import os
+from stacklift.read_config import ConfigReader
+
+
+class TemplateConfig:
+    def __init__(self, templates_file_dir, template_config_dict):
+        self.templates_file_dir = templates_file_dir
+        self.template_config_dict = template_config_dict
+
+    def get_name(self):
+        return self.template_config_dict["Name"]
+
+    def get_template_path(self):
+        filename = self.template_config_dict.get("Filename")
+        return os.path.join(self.templates_file_dir, filename) if filename else None
+
+    def get_function_root(self):
+        function_root = self.template_config_dict.get("FunctionRoot")
+        return os.path.join(self.templates_file_dir, function_root) if function_root else None
+
+    def get_depends(self):
+        return self.template_config_dict.get("Depends") or []
+
+    def get_stack_desired_state(self):
+        return self.template_config_dict.get("StackDesiredState")
 
 
 class TemplatesConfig:
+    @classmethod
+    def from_config_path(cls, config_path):
+        config_reader = ConfigReader(config_path)
+
+        templates_path = config_reader.get_global_value("Templates")
+        # TODO: get the base path from ModuleDir instead of the current directory
+        return cls(templates_path)
+
     def __init__(self, templates_config_path):
         with open(templates_config_path) as f:
             self.templates_config = yaml.load(f)
         self.templates_file_dir = os.path.dirname(templates_config_path)
+
+    def get_group_names(self):
+        return self.templates_config["Groups"].keys()
 
     def get_group(self, group_name):
         group = self.templates_config["Groups"].get(group_name)
@@ -25,7 +60,7 @@ class TemplatesConfig:
         if not template:
             raise RuntimeError("Template {} is not found.".format(template_name))
 
-        return template
+        return TemplateConfig(self.templates_file_dir, template)
 
     def get_group_template_names(self, group_name):
         template_dict = self.get_templates_dict(group_name)

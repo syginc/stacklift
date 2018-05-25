@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
 import yaml
-import argparse
-import json
 from collections import OrderedDict
+import os
 
 def yaml_ordered_load(stream, Loader=yaml.Loader, object_pairs_hook=OrderedDict):
     class OrderedLoader(Loader):
@@ -19,6 +18,7 @@ def yaml_ordered_load(stream, Loader=yaml.Loader, object_pairs_hook=OrderedDict)
 
 class ConfigReader:
     def __init__(self, filename):
+        self.config_path = filename
         with open(filename) as f:
             self.config = yaml_ordered_load(f)
         self.sections = {}
@@ -68,6 +68,9 @@ class ConfigReader:
     def get_parameters(self, section_name, parameter_names):
         key_values = [(x, self.get_parameter_or_default(section_name, x)) for x in parameter_names]
         return { key: value for key, value in key_values if value is not None }
+
+    def get_global_value(self, key):
+        return self.config["Global"][key]
 
 
 class ReadConfigOptions:
