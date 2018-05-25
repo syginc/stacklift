@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
-from glob import glob
 import re
-import argparse
-from stacklift.read_config import ConfigReader, yaml_ordered_load
+from stacklift.templates_config import TemplatesConfig
+from stacklift.read_config import yaml_ordered_load
 
 ALL_KEYS = ["StackName",
             "Region",
@@ -45,14 +44,14 @@ def parse_template(path):
     return TemplateParameter(all, requires)
 
 
-def parse_templates():
+def parse_templates(config_path):
+    templates_config = TemplatesConfig.from_config_path(config_path)
+
     template_parameters = {}
-    for template_path in glob("templates/*.yaml"):
-        m = re.match(r'templates/template-(.*?)\.yaml', template_path)
-        if not m:
-            continue
-        name = m.group(1)
-        template_parameters[name] = parse_template(template_path)
+    for group_name in templates_config.get_group_names():
+        for name in templates_config.get_group_template_names(group_name):
+            template_config = templates_config.get_template_config(group_name, name)
+            template_parameters[name] = parse_template(template_config.get_template_path())
     return template_parameters
 
 
@@ -118,10 +117,11 @@ class Validator:
             if not is_list_ordered(template_parameter.all, section_params.keys()):
                 self.add_error(config_path, section_name, "Parameters must be ordered: {}".format(", ".join(template_parameter.all)))
 
+
 def validate_configs(files):
-    template_parameters = parse_templates()
     validator = Validator()
     for config_path in files:
+        template_parameters = parse_templates(config_path)
         validator.validate_config(config_path, template_parameters)
 
     print("%d error(s)." % (validator.error_count))
