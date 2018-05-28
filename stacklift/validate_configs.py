@@ -3,6 +3,7 @@
 import re
 from stacklift.templates_config import TemplatesConfig
 from stacklift.read_config import yaml_ordered_load
+from stacklift.global_config import GlobalConfig
 
 ALL_KEYS = ["StackName",
             "Region",
@@ -44,8 +45,10 @@ def parse_template(path):
     return TemplateParameter(all, requires)
 
 
-def parse_templates(config_path):
-    templates_config = TemplatesConfig.from_config_path(config_path)
+def parse_templates(config_path, override_module_dir):
+    global_config = GlobalConfig(config_path)
+    templates_config_path = global_config.get_templates_path(override_module_dir)
+    templates_config = TemplatesConfig(templates_config_path)
 
     template_parameters = {}
     for group_name in templates_config.get_group_names():
@@ -118,10 +121,10 @@ class Validator:
                 self.add_error(config_path, section_name, "Parameters must be ordered: {}".format(", ".join(template_parameter.all)))
 
 
-def validate_configs(files):
+def validate_configs(override_module_dir, config_files):
     validator = Validator()
-    for config_path in files:
-        template_parameters = parse_templates(config_path)
+    for config_path in config_files:
+        template_parameters = parse_templates(config_path, override_module_dir)
         validator.validate_config(config_path, template_parameters)
 
     print("%d error(s)." % (validator.error_count))

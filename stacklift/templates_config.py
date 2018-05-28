@@ -1,7 +1,6 @@
 import yaml
 import os
-from stacklift.read_config import ConfigReader
-
+from stacklift.global_config import GlobalConfig
 
 class TemplateConfig:
     def __init__(self, templates_file_dir, template_config_dict):
@@ -27,14 +26,6 @@ class TemplateConfig:
 
 
 class TemplatesConfig:
-    @classmethod
-    def from_config_path(cls, config_path):
-        config_reader = ConfigReader(config_path)
-
-        templates_path = config_reader.get_global_value("Templates")
-        # TODO: get the base path from ModuleDir instead of the current directory
-        return cls(templates_path)
-
     def __init__(self, templates_config_path):
         with open(templates_config_path) as f:
             self.templates_config = yaml.load(f)
