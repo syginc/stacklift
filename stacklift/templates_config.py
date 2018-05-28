@@ -1,6 +1,5 @@
 import yaml
 import os
-from stacklift.global_config import GlobalConfig
 
 class TemplateConfig:
     def __init__(self, templates_file_dir, template_config_dict):
