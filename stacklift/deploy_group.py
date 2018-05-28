@@ -4,6 +4,7 @@ import asyncio
 from stacklift.deploy_template import DeployTemplate
 from stacklift.cfn_deploy import DeployStatus
 from stacklift.templates_config import TemplatesConfig
+from stacklift.global_config import GlobalConfig
 import logging
 
 logging.basicConfig(format="[%(name)s] %(message)s", level=logging.INFO)
@@ -13,7 +14,7 @@ logger = logging.getLogger(__name__)
 class DeployGroup:
     def __init__(self, config_file, group_name):
         self.config_file = config_file
-        self.templates_config = TemplatesConfig.from_config_path(config_file)
+        self.templates_config = TemplatesConfig(GlobalConfig(config_file).get_templates_path())
 
         self.group_name = group_name
         self.deploy_futures = {}
