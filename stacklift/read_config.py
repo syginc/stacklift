@@ -2,7 +2,6 @@
 
 import yaml
 from collections import OrderedDict
-import os
 
 def yaml_ordered_load(stream, Loader=yaml.Loader, object_pairs_hook=OrderedDict):
     class OrderedLoader(Loader):
