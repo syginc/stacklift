@@ -1,5 +1,13 @@
 import yaml
 import os
+from enum import Enum, unique
+
+
+@unique
+class StackDesiredState(Enum):
+    PRESENT = "present"
+    DELETED = "deleted"
+
 
 class TemplateConfig:
     def __init__(self, templates_file_dir, template_config_dict):
@@ -21,7 +29,8 @@ class TemplateConfig:
         return self.template_config_dict.get("Depends") or []
 
     def get_stack_desired_state(self):
-        return self.template_config_dict.get("StackDesiredState")
+        s = self.template_config_dict.get("StackDesiredState")
+        return StackDesiredState(s) if s else None
 
 
 class TemplatesConfig:

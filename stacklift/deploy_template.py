@@ -13,6 +13,9 @@ import botocore
 import asyncio
 import re
 
+from stacklift.templates_config import StackDesiredState
+
+
 def update_hash(hasher, file_name):
     block_size = 4096
     with open(file_name, "rb") as fp:
@@ -88,7 +91,7 @@ class DeployTemplate:
             return key_name
 
     async def deploy(self, function_root):
-        if self.stack_desired_state == "deleted":
+        if self.stack_desired_state == StackDesiredState.DELETED:
             params = {}
         else:
             parameter_names = self.get_parameter_names(self.template_file)
