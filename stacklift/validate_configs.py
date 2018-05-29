@@ -54,7 +54,10 @@ def parse_templates(config_path, override_module_dir):
     for group_name in templates_config.get_group_names():
         for name in templates_config.get_group_template_names(group_name):
             template_config = templates_config.get_template_config(group_name, name)
-            template_parameters[name] = parse_template(template_config.get_template_path())
+            if template_config.get_stack_desired_state() == "deleted":
+                template_parameters[name] = TemplateParameter([], [])
+            else:
+                template_parameters[name] = parse_template(template_config.get_template_path())
     return template_parameters
 
 
