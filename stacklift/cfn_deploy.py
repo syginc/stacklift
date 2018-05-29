@@ -3,11 +3,12 @@
 import boto3
 import botocore
 import json
-import argparse
 import datetime
 import logging
 import asyncio
 from enum import Enum, unique, auto
+from stacklift.templates_config import StackDesiredState
+
 
 # logging.basicConfig(format="[%(levelname)s][%(name)s] %(message)s")
 logging.basicConfig(format="[%(name)s] %(message)s", level=logging.INFO)
@@ -240,7 +241,7 @@ class CloudFormationDeployer:
                     self.print_stack_events(events)
 
     async def deploy(self):
-        if self.stack_desired_state == "deleted":
+        if self.stack_desired_state == StackDesiredState.DELETED:
             return await self.delete_stack()
         else:
             return await self.change_stack()

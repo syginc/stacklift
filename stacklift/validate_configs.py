@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import re
-from stacklift.templates_config import TemplatesConfig
+from stacklift.templates_config import TemplatesConfig, StackDesiredState
 from stacklift.read_config import yaml_ordered_load
 from stacklift.global_config import GlobalConfig
 
@@ -54,7 +54,10 @@ def parse_templates(config_path, override_module_dir):
     for group_name in templates_config.get_group_names():
         for name in templates_config.get_group_template_names(group_name):
             template_config = templates_config.get_template_config(group_name, name)
-            template_parameters[name] = parse_template(template_config.get_template_path())
+            if template_config.get_stack_desired_state() == StackDesiredState.DELETED:
+                template_parameters[name] = TemplateParameter([], [])
+            else:
+                template_parameters[name] = parse_template(template_config.get_template_path())
     return template_parameters
 
 

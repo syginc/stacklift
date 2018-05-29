@@ -2,6 +2,7 @@
 
 from stacklift.read_config import ConfigReader
 from stacklift.cfn_deploy import CloudFormationDeployer
+from stacklift.templates_config import StackDesiredState
 import boto3
 import os
 import zipfile
@@ -10,8 +11,8 @@ import hashlib
 import uuid
 import tempfile
 import botocore
-import asyncio
 import re
+
 
 def update_hash(hasher, file_name):
     block_size = 4096
@@ -88,7 +89,7 @@ class DeployTemplate:
             return key_name
 
     async def deploy(self, function_root):
-        if self.stack_desired_state == "deleted":
+        if self.stack_desired_state == StackDesiredState.DELETED:
             params = {}
         else:
             parameter_names = self.get_parameter_names(self.template_file)
