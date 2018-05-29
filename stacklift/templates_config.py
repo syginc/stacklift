@@ -29,8 +29,8 @@ class TemplateConfig:
         return self.template_config_dict.get("Depends") or []
 
     def get_stack_desired_state(self):
-        s = self.template_config_dict.get("StackDesiredState")
-        return StackDesiredState(s) if s else None
+        return StackDesiredState(self.template_config_dict.get("StackDesiredState",
+                                                               StackDesiredState.PRESENT.value))
 
 
 class TemplatesConfig:

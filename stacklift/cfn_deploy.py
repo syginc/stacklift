@@ -3,15 +3,14 @@
 import boto3
 import botocore
 import json
-import argparse
 import datetime
 import logging
 import asyncio
 from enum import Enum, unique, auto
-
-# logging.basicConfig(format="[%(levelname)s][%(name)s] %(message)s")
 from stacklift.templates_config import StackDesiredState
 
+
+# logging.basicConfig(format="[%(levelname)s][%(name)s] %(message)s")
 logging.basicConfig(format="[%(name)s] %(message)s", level=logging.INFO)
 
 # botocore.session.Session().set_debug_logger()

@@ -2,6 +2,7 @@
 
 from stacklift.read_config import ConfigReader
 from stacklift.cfn_deploy import CloudFormationDeployer
+from stacklift.templates_config import StackDesiredState
 import boto3
 import os
 import zipfile
@@ -10,10 +11,7 @@ import hashlib
 import uuid
 import tempfile
 import botocore
-import asyncio
 import re
-
-from stacklift.templates_config import StackDesiredState
 
 
 def update_hash(hasher, file_name):
