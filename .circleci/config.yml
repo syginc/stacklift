@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/build
     docker:
-      - image: python:3.6
+      - image: python:3.7
 
     steps:
       - checkout
