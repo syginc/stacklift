@@ -23,7 +23,7 @@ jobs:
 
       - run:
           name: Override version
-          command: if [ -n "$CIRCLE_TAG" ]; then echo "$CIRCLE_TAG" > VERSION; fi
+          command: if [ -n "$CIRCLE_TAG" ]; then echo "${CIRCLE_TAG:1}" > VERSION; fi
 
       - run: pipenv run python3 setup.py sdist
 
