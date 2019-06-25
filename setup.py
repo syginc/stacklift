@@ -1,14 +1,10 @@
 from setuptools import setup
-import os
 
 with open('README.md') as file:
     long_description = file.read()
 
-tag = os.getenv("CIRCLE_TAG")
-if tag:
-    version = tag[1:]
-else:
-    version = "0.0.0development"
+with open('VERSION') as file:
+    version = file.read().split('\n')[0]
 
 setup(
     name='stacklift',
