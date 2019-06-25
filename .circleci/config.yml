@@ -21,6 +21,10 @@ jobs:
             - ~/.local/share/virtualenvs
             - ~/.cache/pipenv
 
+      - run:
+          name: Override version
+          command: if [ -n "$CIRCLE_TAG" ]; then echo "$CIRCLE_TAG" > VERSION; fi
+
       - run: pipenv run python3 setup.py sdist
 
       - store_test_results:
