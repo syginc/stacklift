@@ -65,11 +65,13 @@ class DeployTemplate:
         self.s3 = boto3.client('s3')
 
     def get_export_value(self, export_name):
-        # TODO: NextToken
-        response = self.client.list_exports()
-        for export in response["Exports"]:
-            if export["Name"] == export_name:
-                return export["Value"]
+        paginator = self.client.get_paginator('list_exports')
+        page_iterator = paginator.paginate()
+
+        for page in page_iterator:
+            for export in page["Exports"]:
+                if export["Name"] == export_name:
+                    return export["Value"]
 
         raise RuntimeError("Failed to get a export value: {}".format(export_name))
 
