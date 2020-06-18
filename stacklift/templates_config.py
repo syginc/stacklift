@@ -36,7 +36,7 @@ class TemplateConfig:
 class TemplatesConfig:
     def __init__(self, templates_config_path):
         with open(templates_config_path) as f:
-            self.templates_config = yaml.load(f)
+            self.templates_config = yaml.safe_load(f)
         self.templates_file_dir = os.path.dirname(templates_config_path)
 
     def get_group_names(self):
