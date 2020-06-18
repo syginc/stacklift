@@ -8,30 +8,19 @@ jobs:
     steps:
       - checkout
 
-      - run: pip install pipenv
+      - run: pip install poetry
 
       - restore_cache:
-          key: pipenv-{{ arch }}-{{ checksum "Pipfile.lock" }}
+          key: poetry-{{ arch }}-{{ checksum "poetry.lock" }}
 
-      - run: pipenv sync --dev
+      - run: poetry install
 
       - save_cache:
-          key: pipenv-{{ arch }}-{{ checksum "Pipfile.lock" }}
+          key: pipenv-{{ arch }}-{{ checksum "poetry.lock" }}
           paths:
-            - ~/.local/share/virtualenvs
-            - ~/.cache/pipenv
+            - ~/.cache/pypoetry/virtualenvs
 
-      - run:
-          name: Override version
-          command: if [ -n "$CIRCLE_TAG" ]; then echo "${CIRCLE_TAG:1}" > VERSION; fi
-
-      - run: pipenv run python3 setup.py sdist
-
-      - store_test_results:
-          path: /tmp/test-results
-
-      - store_artifacts:
-          path: dist/
+      # TODO: test
 
       - persist_to_workspace:
           root: .
@@ -41,7 +30,7 @@ jobs:
   publish:
     working_directory: ~/build
     docker:
-      - image: python:3
+      - image: python:3.8
 
     steps:
       - checkout
@@ -49,22 +38,23 @@ jobs:
       - attach_workspace:
           at: .
 
-      - run: pip install pipenv
+      - run: pip install poetry
 
       - restore_cache:
-          key: pipenv-{{ arch }}-{{ checksum "Pipfile.lock" }}
+          key: poetry-{{ arch }}-{{ checksum "poetry.lock" }}
 
-      - run: pipenv sync --dev
+      - run: poetry install
 
       - save_cache:
-          key: pipenv-{{ arch }}-{{ checksum "Pipfile.lock" }}
+          key: pipenv-{{ arch }}-{{ checksum "poetry.lock" }}
           paths:
-            - ~/.local/share/virtualenvs
-            - ~/.cache/pipenv
+            - ~/.cache/pypoetry/virtualenvs
 
+      # TODO: set version with poetry
+      
       # TWINE_USERNAME and TWINE_PASSWORD environmental variables are required
       # - run: pipenv run twine upload --repository-url https://test.pypi.org/legacy/ dist/*
-      - run: pipenv run twine upload dist/*
+      - run: poetry publish --build --username "${TWINE_USERNAME}" --password "${TWINE_PASSWORD}" --no-interaction
 
 workflows:
   version: 2
