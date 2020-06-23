@@ -12,3 +12,9 @@ pip install stacklift
 ```
 stacklift --help
 ```
+
+# Development
+```
+pipenv install
+PYTHONPATH=. pipenv run bin/stacklift
+```
